@@ -25,8 +25,8 @@ struct Bone
 {
 public:
 	char BoneName[32]; //0x0000
-	int16_t LeftLeaf; //0x0020
-	int16_t RightLeaf; //0x0022
+	int16_t SiblingBone; //0x0020
+	int16_t ChildBone; //0x0022
 	int16_t Parent; //0x0024
 	char pad_0026[26]; //0x0026
 }; //Size: 0x0040

@@ -3,7 +3,7 @@
 #include "Maths/Matrices.h"
 #include "Helpers/Objects.h"
 #include "../ThirdParty/nlohmann/json.hpp"
-#define DRAW_DEBUG_AIM 0
+#define DRAW_DEBUG_AIM 1
 
 enum class ScopedWeaponType
 {

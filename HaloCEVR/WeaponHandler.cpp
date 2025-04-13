@@ -40,14 +40,14 @@ static void ReferenceUpdateViewModelImpl(HaloID& id, Vector3* pos, Vector3* faci
 			tempTransform.translation = currentQuat->translation;
 			Helpers::CombineTransforms(parentTransform, &tempTransform, &outBoneTransforms[boneIdx]);
 
-			if (currentBone.LeftLeaf != -1)
+			if (currentBone.SiblingBone != -1)
 			{
-				bonesToProcess[lastIndex] = currentBone.LeftLeaf;
+				bonesToProcess[lastIndex] = currentBone.SiblingBone;
 				lastIndex++;
 			}
-			if (currentBone.RightLeaf != -1)
+			if (currentBone.ChildBone != -1)
 			{
-				bonesToProcess[lastIndex] = currentBone.RightLeaf;
+				bonesToProcess[lastIndex] = currentBone.ChildBone;
 				lastIndex++;
 			}
 
@@ -94,8 +94,46 @@ void WeaponHandler::UpdateViewModel(HaloID& id, Vector3* pos, Vector3* facing, V
 	Matrix4 handTransform;
 	CalculateHandTransform(pos, handTransform);
 
+	Matrix4 adjustedHandTransform;
+	// Adjust hand rotation to make the gun face the correct way
+	if (!Game::instance.bUseTwoHandAim)
+	{
+		const Bone& GunBone = boneArray[cachedViewModel.gunIndex];
+
+		const TransformQuat* GunQuat = &boneTransforms[cachedViewModel.gunIndex];
+
+		Transform tempTransform;
+		Helpers::MakeTransformFromQuat(&GunQuat->rotation, &tempTransform);
+
+		Matrix4 rotation;
+		for (int x = 0; x < 3; x++)
+		{
+			for (int y = 0; y < 3; y++)
+			{
+				rotation[x + y * 4] = tempTransform.rotation[x + y * 3];
+			}
+		}
+
+		if (Game::instance.bLeftHanded)
+		{
+			Matrix4 scale;
+			scale.scale(1.0f, -1.0f, 1.0f);
+
+			rotation = scale * rotation * scale;
+		}
+
+		adjustedHandTransform = handTransform * rotation.invert();
+	}
+	else
+	{
+		adjustedHandTransform = handTransform;
+	}
+
 	Transform unmodifiedHandTransform;
 	CalculateBoneTransform(cachedViewModel.rightWristIndex, boneArray, root, boneTransforms, unmodifiedHandTransform);
+
+	Transform unmodifiedGunTransform;
+	CalculateBoneTransform(cachedViewModel.gunIndex, boneArray, root, boneTransforms, unmodifiedHandTransform);
 
 	Transform realTransforms[64]{};
 
@@ -159,49 +197,7 @@ void WeaponHandler::UpdateViewModel(HaloID& id, Vector3* pos, Vector3* facing, V
 			}
 			if (boneIndex == cachedViewModel.rightWristIndex)
 			{
-				// This is dreadful code. Rework to be less insane
-				if (!Game::instance.bUseTwoHandAim)
-				{
-					Matrix4 newTransform = handTransform;
-					if (currentBone.RightLeaf != -1)
-					{
-						Bone& GunBone = boneArray[currentBone.RightLeaf];
-						if (currentBone.RightLeaf == cachedViewModel.gunIndex)
-						{
-							const TransformQuat* GunQuat = &boneTransforms[currentBone.RightLeaf];
-							Helpers::MakeTransformFromQuat(&GunQuat->rotation, &tempTransform);
-
-							Matrix4 rotation;
-							for (int x = 0; x < 3; x++)
-							{
-								for (int y = 0; y < 3; y++)
-								{
-									rotation[x + y * 4] = tempTransform.rotation[x + y * 3];
-								}
-							}
-
-							if (Game::instance.bLeftHanded)
-							{
-								Matrix4 scale;
-								scale.scale(1.0f, -1.0f, 1.0f);
-
-								rotation = scale * rotation * scale;
-							}
-
-							newTransform = newTransform * rotation.invert();
-						}
-						else
-						{
-							Logger::log << "ERROR: Right leaf of " << currentBone.BoneName << " is " << GunBone.BoneName << std::endl;
-						}
-
-					}
-					MoveBoneToTransform(boneIndex, newTransform, realTransforms, outBoneTransforms);
-				}
-				else
-				{
-					MoveBoneToTransform(boneIndex, handTransform, realTransforms, outBoneTransforms);
-				}
+				MoveBoneToTransform(boneIndex, adjustedHandTransform, realTransforms, outBoneTransforms);
 				CreateEndCap(boneIndex, currentBone, outBoneTransforms);
 			}
 			else if (boneIndex == cachedViewModel.leftWristIndex)
@@ -252,6 +248,26 @@ void WeaponHandler::UpdateViewModel(HaloID& id, Vector3* pos, Vector3* facing, V
 			}
 			else if (boneIndex == cachedViewModel.gunIndex)
 			{
+				// Damn you SPV3, why couldn't you attach your guns to the wrist like all the vanilla weapons do?
+				// set out transform to (unmodified gun - unmodified wrist) + updated wrist
+				
+				Transform handTransformT;
+				handTransformT.scale = 1.0f;
+				handTransformT.translation = handTransform * Vector3(0.0f, 0.0f, 0.0f);
+				for (int x = 0; x < 3; x++)
+				{
+					for (int y = 0; y < 3; y++)
+					{
+						handTransformT.rotation[x + y * 3] = handTransform.get()[x + y * 4];
+					}
+				}
+
+				Transform gunTransfom;
+				Transform invHandTransform;
+
+				Helpers::CombineTransforms(&unmodifiedGunTransform, &invHandTransform, &gunTransfom);
+				Helpers::CombineTransforms(&handTransformT, &gunTransfom, &outBoneTransforms[boneIndex]);
+
 				Vector3& gunPos = outBoneTransforms[boneIndex].translation;
 				Matrix3 gunRot = outBoneTransforms[boneIndex].rotation;
 
@@ -292,14 +308,14 @@ void WeaponHandler::UpdateViewModel(HaloID& id, Vector3* pos, Vector3* facing, V
 			}
 #endif
 
-			if (currentBone.LeftLeaf != -1)
+			if (currentBone.SiblingBone != -1)
 			{
-				bonesToProcess[lastIndex] = currentBone.LeftLeaf;
+				bonesToProcess[lastIndex] = currentBone.SiblingBone;
 				lastIndex++;
 			}
-			if (currentBone.RightLeaf != -1)
+			if (currentBone.ChildBone != -1)
 			{
-				bonesToProcess[lastIndex] = currentBone.RightLeaf;
+				bonesToProcess[lastIndex] = currentBone.ChildBone;
 				lastIndex++;
 			}
 
