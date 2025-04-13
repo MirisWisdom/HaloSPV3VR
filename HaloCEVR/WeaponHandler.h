@@ -2,6 +2,7 @@
 #include "Maths/Vectors.h"
 #include "Maths/Matrices.h"
 #include "Helpers/Objects.h"
+#include "../ThirdParty/nlohmann/json.hpp"
 #define DRAW_DEBUG_AIM 0
 
 enum class ScopedWeaponType
@@ -9,12 +10,14 @@ enum class ScopedWeaponType
 	Unknown,
 	Pistol,
 	Rocket,
-	Sniper
+	Sniper,
+	Custom
 };
 
 class WeaponHandler
 {
 public:
+	void LoadCustomWeapons();
 	void UpdateViewModel(struct HaloID& id, struct Vector3* pos, struct Vector3* facing, struct Vector3* up, struct TransformQuat* boneTransforms, struct Transform* outBoneTransforms);
 	void PreFireWeapon(HaloID& weaponID, short param2);
 	void PostFireWeapon(HaloID& weaponID, short param2);
@@ -53,13 +56,36 @@ protected:
 		int rightWristIndex = -1;
 		int gunIndex = -1;
 		int displayIndex = -1;
+		int leftUpperArmIndex = -1;
+		int rightUpperArmIndex = -1;
 		Vector3 cookedFireOffset;
 		Matrix3 cookedFireRotation;
 		Vector3 fireOffset;
 		Vector3 gunOffset;
 		Matrix3 fireRotation;
 		ScopedWeaponType scopeType = ScopedWeaponType::Unknown;
+		int customId = -1;
 	} cachedViewModel;
+
+	struct WeaponData
+	{
+		// (Partial) name of the model associated with this weapon
+		std::string modelName;
+		// (Partial) name of the left wrist bone
+		std::string leftWrist = "l wrist";
+		// (Partial) name of the right wrist bone
+		std::string rightWrist = "r wrist";
+		// (Partial) name of the weapon's main bone
+		std::string frame = "gun";
+		// (Partial) name of the weapon's ammo display (if it has one), this bone will be mirrored when in the left hand
+		std::string display = "display";
+		// Offset to display the scope view at, relative to the controller
+		Vector3 scopeOffset;
+
+		NLOHMANN_DEFINE_TYPE_INTRUSIVE(WeaponData, modelName, leftWrist, rightWrist, frame, display, scopeOffset)
+	};
+
+	std::vector<WeaponData> customWeapons;
 
 	UnitDynamicObject* weaponFiredPlayer = nullptr;
 	Vector3 realPlayerPosition;

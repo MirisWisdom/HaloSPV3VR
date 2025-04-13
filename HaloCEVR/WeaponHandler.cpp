@@ -135,7 +135,7 @@ void WeaponHandler::UpdateViewModel(HaloID& id, Vector3* pos, Vector3* facing, V
 					0.0f, -1.0f, 0.0f,
 					0.0f, 0.0f, 1.0f
 				);
-				
+
 				for (int i = 0; i < 9; i++)
 				{
 					tempTransform.rotation[i] = rot[i];
@@ -152,12 +152,12 @@ void WeaponHandler::UpdateViewModel(HaloID& id, Vector3* pos, Vector3* facing, V
 			}
 			// Cache the calculated transform for this bone
 			realTransforms[boneIndex] = outBoneTransforms[boneIndex];
-			if (currentBone.Parent == 0 || boneArray[currentBone.Parent].Parent == 0)
+			if (boneIndex == cachedViewModel.leftUpperArmIndex || boneIndex == cachedViewModel.rightUpperArmIndex)
 			{
 				// Hide arms/root
 				outBoneTransforms[boneIndex].scale = 0.0f;
 			}
-			else if (boneIndex == cachedViewModel.rightWristIndex)
+			if (boneIndex == cachedViewModel.rightWristIndex)
 			{
 				// This is dreadful code. Rework to be less insane
 				if (!Game::instance.bUseTwoHandAim)
@@ -231,10 +231,10 @@ void WeaponHandler::UpdateViewModel(HaloID& id, Vector3* pos, Vector3* facing, V
 					Matrix4 deltaMatrix = rightMatrix * leftMatrix;
 
 					if (Game::instance.bLeftHanded)
-					{						
+					{
 						Matrix4 flip;
 						flip.scale(1.0f, -1.0f, 1.0f);
-						
+
 						deltaMatrix = flip * deltaMatrix * flip;
 						leftMatrix = handTransform * deltaMatrix;
 					}
@@ -320,7 +320,7 @@ inline void WeaponHandler::CalculateBoneTransform(int boneIndex, Bone* boneArray
 	}
 
 	int currentIndex = boneIndex;
-	
+
 	while (true)
 	{
 		Bone& currentBone = boneArray[currentIndex];
@@ -410,55 +410,9 @@ void WeaponHandler::UpdateCache(HaloID& id, AssetData_ModelAnimations* animation
 	cachedViewModel.rightWristIndex = -1;
 	cachedViewModel.gunIndex = -1;
 	cachedViewModel.displayIndex = -1;
-
-	Bone* boneArray = animationData->BoneArray;
-
-	for (int i = 0; i < animationData->NumBones; i++)
-	{
-		Bone& CurrentBone = boneArray[i];
-
-		if (cachedViewModel.leftWristIndex == -1 && strstr(CurrentBone.BoneName, "l wrist"))
-		{
-#if DRAW_DEBUG_AIM
-			Logger::log << "[UpdateCache] Found Left Wrist @ " << i << std::endl;
-#endif
-			cachedViewModel.leftWristIndex = i;
-		}
-		else if (cachedViewModel.rightWristIndex == -1 && strstr(CurrentBone.BoneName, "r wrist"))
-		{
-#if DRAW_DEBUG_AIM
-			Logger::log << "[UpdateCache] Found Right Wrist @ " << i << std::endl;
-#endif
-			cachedViewModel.rightWristIndex = i;
-		}
-		else if (cachedViewModel.gunIndex == -1 && strstr(CurrentBone.BoneName, "gun"))
-		{
-#if DRAW_DEBUG_AIM
-			Logger::log << "[UpdateCache] Found Gun @ " << i << std::endl;
-#endif
-			cachedViewModel.gunIndex = i;
-		}
-		else if (cachedViewModel.gunIndex == -1 && strstr(CurrentBone.BoneName, "body"))
-		{
-#if DRAW_DEBUG_AIM
-			Logger::log << "[UpdateCache] Found Gun @ " << i << std::endl;
-#endif
-			cachedViewModel.gunIndex = i;
-		}
-		else if (cachedViewModel.displayIndex == -1 && strstr(CurrentBone.BoneName, "display"))
-		{
-#if DRAW_DEBUG_AIM
-			Logger::log << "[UpdateCache] Found Display @ " << i << std::endl;
-#endif
-			cachedViewModel.displayIndex = i;
-		}
-#if DRAW_DEBUG_AIM
-		else
-		{
-			Logger::log << "[UpdateCache] Skipped Bone " << CurrentBone.BoneName << std::endl;
-		}
-#endif
-	}
+	cachedViewModel.customId = -1;
+	cachedViewModel.leftUpperArmIndex = -1;
+	cachedViewModel.rightUpperArmIndex = -1;
 
 	cachedViewModel.fireOffset = Vector3();
 	cachedViewModel.cookedFireOffset = Vector3();
@@ -532,6 +486,91 @@ void WeaponHandler::UpdateCache(HaloID& id, AssetData_ModelAnimations* animation
 		cachedViewModel.scopeType = ScopedWeaponType::Unknown;
 	}
 
+	const char* lWristBone = "l wrist";
+	const char* rWristBone = "r wrist";
+	const char* gunBone = "gun";
+	const char* bodyBone = "body";
+	const char* displayBone = "body";
+
+	// Find matching custom weapon struct
+	for (size_t i = 0; i < customWeapons.size(); i++)
+	{
+		if (strstr(customWeapons[i].modelName.c_str(), model->ModelPath))
+		{
+			cachedViewModel.customId = i;
+			lWristBone = customWeapons[i].leftWrist.c_str();
+			rWristBone = customWeapons[i].rightWrist.c_str();
+			gunBone = customWeapons[i].frame.c_str();
+			bodyBone = customWeapons[i].frame.c_str();
+			displayBone = customWeapons[i].display.c_str();
+			cachedViewModel.scopeType = ScopedWeaponType::Custom;
+			break;
+		}
+	}
+
+	Bone* boneArray = animationData->BoneArray;
+
+	for (int i = 0; i < animationData->NumBones; i++)
+	{
+		Bone& CurrentBone = boneArray[i];
+
+		if (cachedViewModel.leftWristIndex == -1 && strstr(CurrentBone.BoneName, lWristBone))
+		{
+#if DRAW_DEBUG_AIM
+			Logger::log << "[UpdateCache] Found Left Wrist @ " << i << std::endl;
+#endif
+			cachedViewModel.leftWristIndex = i;
+		}
+		else if (cachedViewModel.rightWristIndex == -1 && strstr(CurrentBone.BoneName, rWristBone))
+		{
+#if DRAW_DEBUG_AIM
+			Logger::log << "[UpdateCache] Found Right Wrist @ " << i << std::endl;
+#endif
+			cachedViewModel.rightWristIndex = i;
+		}
+		else if (cachedViewModel.gunIndex == -1 && strstr(CurrentBone.BoneName, gunBone))
+		{
+#if DRAW_DEBUG_AIM
+			Logger::log << "[UpdateCache] Found Gun @ " << i << std::endl;
+#endif
+			cachedViewModel.gunIndex = i;
+		}
+		else if (cachedViewModel.gunIndex == -1 && strstr(CurrentBone.BoneName, bodyBone))
+		{
+#if DRAW_DEBUG_AIM
+			Logger::log << "[UpdateCache] Found Gun @ " << i << std::endl;
+#endif
+			cachedViewModel.gunIndex = i;
+		}
+		else if (cachedViewModel.displayIndex == -1 && strstr(CurrentBone.BoneName, displayBone))
+		{
+#if DRAW_DEBUG_AIM
+			Logger::log << "[UpdateCache] Found Display @ " << i << std::endl;
+#endif
+			cachedViewModel.displayIndex = i;
+		}
+		else if (cachedViewModel.leftUpperArmIndex == -1 && strstr(CurrentBone.BoneName, "l upperarm"))
+		{
+#if DRAW_DEBUG_AIM
+			Logger::log << "[UpdateCache] Found Left Upper Arm @ " << i << std::endl;
+#endif
+			cachedViewModel.leftUpperArmIndex = i;
+		}
+		else if (cachedViewModel.rightUpperArmIndex == -1 && strstr(CurrentBone.BoneName, "r upperarm"))
+		{
+#if DRAW_DEBUG_AIM
+			Logger::log << "[UpdateCache] Found Right Upper Arm @ " << i << std::endl;
+#endif
+			cachedViewModel.rightUpperArmIndex = i;
+		}
+#if DRAW_DEBUG_AIM
+		else
+		{
+			Logger::log << "[UpdateCache] Skipped Bone " << CurrentBone.BoneName << std::endl;
+		}
+#endif
+	}
+
 	if (!model->ModelData)
 	{
 		return;
@@ -594,13 +633,15 @@ Vector3 WeaponHandler::GetScopeLocation(ScopedWeaponType type) const
 
 	switch (type)
 	{
-	case ScopedWeaponType::Rocket:
-		return Game::instance.c_ScopeOffsetRocket->Value() * Scale;
-	case ScopedWeaponType::Sniper:
-		return Game::instance.c_ScopeOffsetSniper->Value() * Scale;
-	case ScopedWeaponType::Unknown:
-	case ScopedWeaponType::Pistol:
-		return Game::instance.c_ScopeOffsetPistol->Value() * Scale;
+		case ScopedWeaponType::Rocket:
+			return Game::instance.c_ScopeOffsetRocket->Value() * Scale;
+		case ScopedWeaponType::Sniper:
+			return Game::instance.c_ScopeOffsetSniper->Value() * Scale;
+		case ScopedWeaponType::Unknown:
+		case ScopedWeaponType::Pistol:
+			return Game::instance.c_ScopeOffsetPistol->Value() * Scale;
+		case ScopedWeaponType::Custom:
+			return customWeapons[cachedViewModel.customId].scopeOffset * Scale;
 	}
 	return Vector3(0.0f, 0.0f, 0.0f);
 }
@@ -610,7 +651,7 @@ Matrix4 WeaponHandler::GetDominantHandTransform() const
 	Matrix4 controllerTransform;
 	Vector3 actualControllerPos;
 	Vector3 toOffHand;
-	Vector3 smoothedPosition; 
+	Vector3 smoothedPosition;
 
 	if (!Game::instance.GetCalculatedHandPositions(controllerTransform, actualControllerPos, toOffHand))
 	{
@@ -774,6 +815,33 @@ bool WeaponHandler::GetWorldWeaponScope(Vector3& outPosition, Vector3& outAim, V
 bool WeaponHandler::IsSniperScope() const
 {
 	return cachedViewModel.scopeType == ScopedWeaponType::Sniper;
+}
+
+void WeaponHandler::LoadCustomWeapons()
+{
+	std::filesystem::path folder = std::filesystem::current_path() / "VR" / "Custom";
+	if (!std::filesystem::is_directory(folder))
+	{
+		return;
+	}
+	
+	for (const std::filesystem::directory_entry& file : std::filesystem::directory_iterator{folder})
+	{
+		std::ifstream inFile(file.path());
+		if (!inFile.is_open())
+		{
+			Logger::log << "[CustomWeapons] Failed to open file: " << file << std::endl;
+			continue;
+		}
+		nlohmann::json jsonData;
+		inFile >> jsonData;
+		if (jsonData.is_null())
+		{
+			Logger::log << "[CustomWeapons] Failed to parse JSON data in file: " << file << std::endl;
+			continue;
+		}
+		customWeapons.push_back(jsonData.get<WeaponData>());
+	}
 }
 
 void WeaponHandler::RelocatePlayer(HaloID& PlayerID)

@@ -14,7 +14,7 @@
 #include "../Helpers/Version.h"
 
 // TODO: Hook this up to some sort of github action
-#define MOD_VERSION "1.3.0"
+#define MOD_VERSION "1.4.0"
 
 void SettingsMenu::CreateMenus()
 {

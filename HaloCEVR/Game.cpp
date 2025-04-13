@@ -53,6 +53,8 @@ void Game::Init()
 	Game::instance.bLeftHanded = Game::instance.c_LeftHanded->Value();
 	inputHandler.RegisterInputs();
 
+	weaponHandler.LoadCustomWeapons();
+
 	backBufferWidth = vr->GetViewWidth();
 	backBufferHeight = vr->GetViewHeight();
 

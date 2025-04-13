@@ -16,6 +16,7 @@
 
 #include <cmath>
 #include <iostream>
+#include "../../ThirdParty/nlohmann/json.hpp"
 
 ///////////////////////////////////////////////////////////////////////////////
 // 2D vector
@@ -105,6 +106,8 @@ struct Vector3
 
     friend Vector3 operator*(const float a, const Vector3 vec);
     friend std::ostream& operator<<(std::ostream& os, const Vector3& vec);
+
+	NLOHMANN_DEFINE_TYPE_INTRUSIVE(Vector3, x, y, z)
 };
 
 
