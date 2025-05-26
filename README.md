@@ -195,15 +195,9 @@ Use SteamVR input settings to change your bindings to whatever you want. You can
 Thank you! See compiling source directions below and submit a Pull Request on Github explaining the changes you have made and impact on other files.  Be sure to thoroughly test any changes before submitting them. After others and I test the changes, they may be incorporated into the mod release.
 
 ## Compiling Source
-1. Make sure you're running VS 2022 and open the solution.
-2. Ensure that C++ Language Standard is ISO C++ 17 Standard (/std:c++17). This can be found under HaloCEVR Properties -> Configuration Properties -> General.
-3. Set solution build configuration to release and target x86.
-
-This should be everything that needs to be done inside of the HaloCEVR project, however it is likely you will need to compile MinHook.
-1. Go to https://github.com/TsudaKageyu/minhook and clone the project.
-2. Open the file and navigate to build/VC17, open this solution.
-3. Set solution build configuration to release and target x86.
-4. Build the libMinHook project, the result of which should be a libMinHook.x86.lib file.
-5. Replace the file libMinHook.x86.lib in the HaloCEVR folder found at HaloCEVR-master\ThirdParty\MinHook\lib with this newly compiled libMinHook.x86.lib file
-
-You should now be able to build successfully, this will generate a d3d9.dll file, using the "makerelease" bat file we can create a zip containing the d3d9.dll and the VR folder. You will need to add openvr_api.dll yourself, either by adding to the release folder so the bat file can pickup copy and zip it, or by adding it directly into your halo CE installation directory.
+1. Clone this repository (`git clone --recurse-submodules https://github.com/LivingFray/HaloCEVR.git`)
+2. Run initinstall.bat and enter the Directory and executable name for your halo install (this must be done while visual studio is closed)
+3. Open HaloCEVR.sln in Visual Studio 2022
+4. Set the project configuration to "Debug", "Release" or "Emulated-VR" on "x86" (Emulated will create a desktop window showing the VR perspective rather than launching OpenVR, which is very helpful for quick debugging)
+5. Click "Local Windows Debugger". If done correctly halo should automatically launch with the mod installed and visual studio's debugger attached.
+6. If this is the first time running the mod you may need to run makerelease.bat after building to generate HaloCEVR.zip. Unzip the contents of this file into halo's directory to install the additional required assets
