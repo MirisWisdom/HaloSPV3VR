@@ -130,7 +130,7 @@
       <IgnoreSpecificDefaultLibraries>LIBCMT</IgnoreSpecificDefaultLibraries>
     </Link>
     <PostBuildEvent>
-      <Command>xcopy /D /Y "$(TargetDir)d3d9.dll" "$(HALOCEVR_DIR)"</Command>
+      <Command>xcopy /D /Y "$(TargetDir)d3d9.dll" "C:\Program Files (x86)\Microsoft Games\Halo"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Emulated-VR|Win32'">
@@ -152,7 +152,7 @@
       <IgnoreSpecificDefaultLibraries>LIBCMT</IgnoreSpecificDefaultLibraries>
     </Link>
     <PostBuildEvent>
-      <Command>xcopy /D /Y "$(TargetDir)d3d9.dll" "$(HALOCEVR_DIR)"</Command>
+      <Command>xcopy /D /Y "$(TargetDir)d3d9.dll" "C:\Program Files (x86)\Microsoft Games\Halo"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -178,7 +178,7 @@
       <IgnoreSpecificDefaultLibraries>LIBCMT</IgnoreSpecificDefaultLibraries>
     </Link>
     <PostBuildEvent>
-      <Command>xcopy /D /Y "$(TargetDir)d3d9.dll" "$(HALOCEVR_DIR)"</Command>
+      <Command>xcopy /D /Y "$(TargetDir)d3d9.dll" "C:\Program Files (x86)\Microsoft Games\Halo"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -334,25 +334,25 @@
     </VisualStudio>
   </ProjectExtensions>
     <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <LocalDebuggerCommand>$(HALOCEVR_DIR)\$(HALOCEVR_EXE)</LocalDebuggerCommand>
+    <LocalDebuggerCommand>C:\Program Files (x86)\Microsoft Games\Halo\halo.exe</LocalDebuggerCommand>
     <LocalDebuggerCommandArguments>
     </LocalDebuggerCommandArguments>
-    <LocalDebuggerWorkingDirectory>$(HALOCEVR_DIR)</LocalDebuggerWorkingDirectory>
+    <LocalDebuggerWorkingDirectory>C:\Program Files (x86)\Microsoft Games\Halo</LocalDebuggerWorkingDirectory>
     <LocalDebuggerAttach>false</LocalDebuggerAttach>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Emulated-VR|Win32'">
-    <LocalDebuggerCommand>$(HALOCEVR_DIR)\$(HALOCEVR_EXE)</LocalDebuggerCommand>
+    <LocalDebuggerCommand>C:\Program Files (x86)\Microsoft Games\Halo\halo.exe</LocalDebuggerCommand>
     <LocalDebuggerCommandArguments />
-    <LocalDebuggerWorkingDirectory>$(HALOCEVR_DIR)</LocalDebuggerWorkingDirectory>
+    <LocalDebuggerWorkingDirectory>C:\Program Files (x86)\Microsoft Games\Halo</LocalDebuggerWorkingDirectory>
     <LocalDebuggerAttach>false</LocalDebuggerAttach>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <LocalDebuggerCommand>$(HALOCEVR_DIR)\$(HALOCEVR_EXE)</LocalDebuggerCommand>
+    <LocalDebuggerCommand>C:\Program Files (x86)\Microsoft Games\Halo\halo.exe</LocalDebuggerCommand>
     <LocalDebuggerCommandArguments>
     </LocalDebuggerCommandArguments>
-    <LocalDebuggerWorkingDirectory>$(HALOCEVR_DIR)</LocalDebuggerWorkingDirectory>
+    <LocalDebuggerWorkingDirectory>C:\Program Files (x86)\Microsoft Games\Halo</LocalDebuggerWorkingDirectory>
     <LocalDebuggerAttach>false</LocalDebuggerAttach>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
   </PropertyGroup>
