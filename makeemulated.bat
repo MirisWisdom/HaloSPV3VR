@@ -14,6 +14,6 @@ xcopy "./ThirdParty/OpenVR/bin/openvr_api.dll" "./Output/" /F
 :: Copy .dlls to top level
 robocopy "./Emulated-VR" "./Output" "*.dll"
 :: Zip everything
-tar -acf HaloCEVR-Emulated.zip -C Output *.*
+tar -acf HaloSPV3VR-Emulated.zip -C Output *.*
 :: Remove temp directory
 rmdir /s /q Output
